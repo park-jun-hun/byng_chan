@@ -6,6 +6,8 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageButton;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -16,11 +18,13 @@ import app.akexorcist.bluetotohspp.library.DeviceList;
 
 
 public class MainActivity extends AppCompatActivity {
+    int b_state=0, d_state=0;
     private BluetoothSPP bt;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        TextView blutooth =findViewById(R.id.state);
         bt = new BluetoothSPP(this); //Initializing
 
         if (!bt.isBluetoothAvailable()) { //블루투스 사용 불가
@@ -59,9 +63,15 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 if (bt.getServiceState() == BluetoothState.STATE_CONNECTED) {
                     bt.disconnect();
+
                 } else {
                     Intent intent = new Intent(getApplicationContext(), DeviceList.class);
                     startActivityForResult(intent, BluetoothState.REQUEST_CONNECT_DEVICE);
+                    b_state=1;
+                    TextView blutooth =findViewById(R.id.state);
+                    blutooth.setText("블루투스 상태 : 연결");
+                    TextView door_state=findViewById(R.id.door);
+                    door_state.setText("도어락 상태 : 블루투스 연결");
                 }
             }
         });
@@ -77,6 +87,7 @@ public class MainActivity extends AppCompatActivity {
         if (!bt.isBluetoothEnabled()) { //
             Intent intent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
             startActivityForResult(intent, BluetoothState.REQUEST_ENABLE_BT);
+
         } else {
             if (!bt.isServiceAvailable()) {
                 bt.setupService();
@@ -88,22 +99,42 @@ public class MainActivity extends AppCompatActivity {
 
     public void setup() {
 
-        Button btnO = findViewById(R.id.btnOpen); //열림 버튼
+        ImageButton btnO = findViewById(R.id.btnOpen); //열림 버튼
         btnO.setOnClickListener(new View.OnClickListener() {
+            TextView door_state=findViewById(R.id.door);
             public void onClick(View v) {
+
 //                하고 싶은 명령어
-                Toast.makeText(getApplicationContext()
-                        , "Open."
-                        , Toast.LENGTH_SHORT).show();
+                if(b_state==1) {
+                    Toast.makeText(getApplicationContext()
+                            , "Open."
+                            , Toast.LENGTH_SHORT).show();
+                    door_state.setText("도어락 상태 : 열림");
+
+                }
+                else{
+                    Toast.makeText(getApplicationContext()
+                            , "블루투스 연결 X"
+                            , Toast.LENGTH_SHORT).show();
+                }
             }
         });
-        Button btnCo = findViewById(R.id.btnClose); //닫힘 버튼
+        ImageButton btnCo = findViewById(R.id.btnClose); //닫힘 버튼
         btnCo.setOnClickListener(new View.OnClickListener() {
+            TextView door_state=findViewById(R.id.door);
             public void onClick(View v) {
                 //                하고 싶은 명령어
-                Toast.makeText(getApplicationContext()
-                        , "Close"
-                        , Toast.LENGTH_SHORT).show();
+                if(b_state==1) {
+                    Toast.makeText(getApplicationContext()
+                            , "Close."
+                            , Toast.LENGTH_SHORT).show();
+                    door_state.setText("도어락 상태 : 닫힘");
+                }
+                else{
+                    Toast.makeText(getApplicationContext()
+                            , "블루투스 연결 X"
+                            , Toast.LENGTH_SHORT).show();
+                }
 //                check
             }
         });
@@ -112,7 +143,7 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 //                하고 싶은 명령어
                 Toast.makeText(getApplicationContext()
-                        , "new"
+                        , "새로고침"
                         , Toast.LENGTH_SHORT).show();
             }
         });
